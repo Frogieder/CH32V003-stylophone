@@ -56,6 +56,7 @@ const int8_t dubreq_stylophone_sound[157] = {
     73, 69, 64, 64, 68, 73, 75, 75
 };
 
+#define MAGIC_NUMBER 69420
 
 #define OCTAVE_BUTTON PD5
 
@@ -221,7 +222,7 @@ void TIM2_IRQHandler(void)
     {
         AR_state -= (AR_state > 0);
     }
-    mix = (AR_state*mix) >> AR_POW;
+    mix = (AR_state * mix) >> AR_POW;
 
     TIM1->CH2CVR = mix;
 }
@@ -315,6 +316,13 @@ void start_buzzer()
     buzzer_state = true;
 }
 
+enum KeyboardState {
+    SUSTAINING_TONE,
+    CHANGING_TONE,
+};
+
+enum KeyboardState state = SUSTAINING_TONE;
+
 /*
  * entry
  */
@@ -333,6 +341,8 @@ int main()
     funDigitalWrite(OCTAVE_BUTTON, 1);
 
     uint32_t previous_frequency = 0;
+    uint32_t sustained_frequency = MAGIC_NUMBER;
+    uint32_t last_timestamp = 0;
 
     Delay_Ms(100);
 
@@ -343,7 +353,7 @@ int main()
          * Sound generator
          */
         uint32_t value = find_bin(adc_buffer[0]);
-        uint32_t frequency = 69420;
+        uint32_t frequency = MAGIC_NUMBER;
         if (value != -1)
         {
             frequency = frequencies[9 - value];
@@ -356,26 +366,48 @@ int main()
                 frequency = frequencies[value + 10];
             }
         }
-        if (frequency != previous_frequency)
+
+        switch (state)
         {
-            previous_frequency = frequency;
-            continue;
+        case SUSTAINING_TONE:
+            if (frequency != sustained_frequency)
+            {
+                state = CHANGING_TONE;
+                last_timestamp = SysTick->CNT;
+            }
+            break;
+        case CHANGING_TONE:
+            if (frequency == sustained_frequency)
+            {
+                state = SUSTAINING_TONE;
+                break;
+            }
+            if (frequency != previous_frequency)
+            {
+                last_timestamp = SysTick->CNT;
+                break;
+            }
+
+            // Check if we have waited for at least 5 milliseconds
+            if (SysTick->CNT - last_timestamp > 40000)
+            {
+                state = SUSTAINING_TONE;
+                sustained_frequency = frequency;
+                break;
+            }
+            break;
         }
         previous_frequency = frequency;
 
-        if (frequency != 69420)
+        if (sustained_frequency != MAGIC_NUMBER)
         {
-            if (!funDigitalRead(OCTAVE_BUTTON))
-            {
-                frequency = frequency << 1;
-            }
             start_buzzer();
-            set_frequency(frequency);
+            set_frequency(!funDigitalRead(OCTAVE_BUTTON) ? sustained_frequency << 1 : sustained_frequency);
         }
         else
         {
             stop_buzzer();
         }
-        Delay_Ms(10);
+        // Delay_Ms(10);
     }
 }
