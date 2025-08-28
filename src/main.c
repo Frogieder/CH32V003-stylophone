@@ -62,7 +62,7 @@ const int8_t dubreq_stylophone_sound[157] = {
 
 volatile uint16_t adc_buffer[2] = {420, 69};
 
-volatile uint16_t omega = 0;
+volatile uint32_t omega = 0;
 volatile bool buzzer_state = false;
 
 // Frequency * 10
@@ -205,18 +205,18 @@ void TIM2_IRQHandler(void)
     // mix = (phase1 + phase2) >> (1 + 8);
 
     /* Sound generator */
-    static uint16_t phase = 0;
+    static uint32_t phase = 0;
     phase += omega;
-    if (phase >= (157 << 8))
-        phase = 0;
-    mix = dubreq_stylophone_sound[phase >> 8] + 128;
+    if (phase >= (157 << 16))
+        phase -= 157 << 16;
+    mix = dubreq_stylophone_sound[phase >> 16] + 128;
     /* End of sound generator */
 
     // AR (no delay or sustain)
     static uint32_t AR_state = 0;
     if (buzzer_state)
     {
-        AR_state += (AR_state < (1 << AR_POW)) << 1;
+        AR_state += (AR_state < (1 << AR_POW)) << 10;
     }
     else
     {
@@ -301,7 +301,7 @@ void adc_init(void)
 
 void set_frequency(const uint32_t frequency)
 {
-    omega = (frequency << 16) / (10 * (24000 << 8) / 157);
+    omega = (frequency << 16) / (10 * 24000 / 157);
 }
 
 void stop_buzzer()
