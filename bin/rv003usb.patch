@@ -1,0 +1,69 @@
+diff --git a/bootloader/bootloader.c b/bootloader/bootloader.c
+index 82fb189..e836747 100644
+--- a/bootloader/bootloader.c
++++ b/bootloader/bootloader.c
+@@ -33,18 +33,18 @@
+ // If you want to use a Button during boot to enter bootloader, use these defines 
+ // to setup the Button. If you do, it makes sense to also set DISABLE_BOOTLOAD above, 
+ // set BOOTLOADER_TIMEOUT_PWR to 0 and disable BOOTLOADER_TIMEOUT_USB
+-//#define BOOTLOADER_BTN_PORT D
+-//#define BOOTLOADER_BTN_PIN 2
+-//#define BOOTLOADER_BTN_TRIG_LEVEL 0 // 1 = HIGH; 0 = LOW
++#define BOOTLOADER_BTN_PORT A
++#define BOOTLOADER_BTN_PIN 2
++#define BOOTLOADER_BTN_TRIG_LEVEL 0 // 1 = HIGH; 0 = LOW
+ //#define BOOTLOADER_BTN_PULL 1 // 1 = Pull-Up; 0 = Pull-Down; Optional, comment out for floating input
+ 
+ // Timeout for bootloader after power-up, set to 0 to stay in bootloader forever
+ // 75ms per unit; 67 ~= 5s
+-#define BOOTLOADER_TIMEOUT_PWR 67
++#define BOOTLOADER_TIMEOUT_PWR 0
+ 
+ // Timeout (reset) for bootloader once USB Host is detected, set to 0 to stay in bootloader forever
+ // 75ms per unit; 0 costs 28 Bytes, >0 costs 48 Bytes; Comment out if not used
+-//#define BOOTLOADER_TIMEOUT_USB 0
++/*#define BOOTLOADER_TIMEOUT_USB 0*/
+ 
+ // Timeout Timebase; Careful: Constant works out to a single lbu instruction. Changes may result in bigger code
+ // -0x100000 = 302ms; -0x040000 = 75ms;
+@@ -110,7 +110,7 @@ void boot_usercode()
+ 	FLASH->BOOT_MODEKEYR = FLASH_KEY1;
+ 	FLASH->BOOT_MODEKEYR = FLASH_KEY2;
+ 	FLASH->STATR = 0; // 1<<14 is zero, so, boot user code.
+-	// FLASH->CTLR = CR_LOCK_Set;    // Not needed, flash is locked at reboot (soft reboot counts, I checked)
++	// FLASH->CTLR = CR_LOCK_Set;	// Not needed, flash is locked at reboot (soft reboot counts, I checked)
+ 	PFIC->SCTLR = 1<<31;
+ }
+diff --git a/bootloader/usb_config.h b/bootloader/usb_config.h
+index 4fe9e9c..01a8efb 100644
+--- a/bootloader/usb_config.h
++++ b/bootloader/usb_config.h
+@@ -16,11 +16,11 @@
+ 	PC4 D-_PU
+ */
+ 
+-#define USB_PORT D     // [A,C,D] GPIO Port to use with D+, D- and DPU
+-#define USB_PIN_DP 3   // [0-4] GPIO Number for USB D+ Pin
+-#define USB_PIN_DM 4   // [0-4] GPIO Number for USB D- Pin
++#define USB_PORT C     // [A,C,D] GPIO Port to use with D+, D- and DPU
++#define USB_PIN_DP 1   // [0-4] GPIO Number for USB D+ Pin
++#define USB_PIN_DM 2   // [0-4] GPIO Number for USB D- Pin
+ //#define USB_PORT_DPU A  // [A,C,D] Override GPIO Port for DPU
+-#define USB_PIN_DPU 5  // [0-7] GPIO for feeding the 1.5k Pull-Up on USB D- Pin; Comment out if not used / tied to 3V3!
++#define USB_PIN_DPU 4  // [0-7] GPIO for feeding the 1.5k Pull-Up on USB D- Pin; Comment out if not used / tied to 3V3!
+ 
+ #define RV003USB_OPTIMIZE_FLASH 1
+ 
+@@ -106,9 +106,9 @@ static const uint8_t config_descriptor[] = {  //Mostly stolen from a USB mouse I
+ 
+ //Ever wonder how you have more than 6 keys down at the same time on a USB keyboard?  It's easy. Enumerate two keyboards!
+ 
+-#define STR_MANUFACTURER u"cnlohr"
+-#define STR_PRODUCT      u"rv003usb"
+-#define STR_SERIAL       u"NBTT" // Need to change to BOOT when we finally decide on a flashing mechanism.
++#define STR_MANUFACTURER u"LSTME"
++#define STR_PRODUCT      u"Stylophone"
++#define STR_SERIAL       u"NBTT" //:q Need to change to BOOT when we finally decide on a flashing mechanism.
+ 
+ struct usb_string_descriptor_struct {
+ 	uint8_t bLength;

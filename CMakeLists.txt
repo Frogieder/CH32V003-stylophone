@@ -1,8 +1,7 @@
 # CMake file to compile and flash projects with ch32fun
 #
 # This is an early version, some refactoring is needed to simplify configuration and adding new C files.
-# Testing is also needed for boards other than CH32V002 and CH32VOO3
-# The
+# Testing is also needed for boards other than CH32V002 and CH32VOO3.
 
 cmake_minimum_required(VERSION 3.16)
 
@@ -53,7 +52,7 @@ set(TARGET_EXTRAS
         CACHE STRING "Extra C files in src")
 set(TARGET_EXT "c" CACHE STRING "File extension of target source file")
 set(TARGET_MCU "CH32V003" CACHE STRING "MCU model")
-set(MINICHLINK_PATH "${CMAKE_SOURCE_DIR}/ch32fun/minichlink" CACHE PATH "Path to minichlink")
+set(MINICHLINK_PATH "${CMAKE_SOURCE_DIR}/bin" CACHE PATH "Path to minichlink")
 set(CH32FUN_PATH "${CMAKE_SOURCE_DIR}/ch32fun/ch32fun" CACHE PATH "Path to ch32fun")
 set(WRITE_SECTION "flash" CACHE STRING "Flash section")
 set(MCU_PACKAGE "1" CACHE STRING "MCU package")
