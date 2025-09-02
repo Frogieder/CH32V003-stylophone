@@ -1,4 +1,4 @@
-~~# CH32-V003-based Stylophone
+# CH32-V003-based Stylophone
 
 ## Features
 * 20-tone keyboard and octave-shift button
